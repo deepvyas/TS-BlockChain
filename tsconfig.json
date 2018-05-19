@@ -1,0 +1,13 @@
+{
+  "compilerOptions":{
+    "module": "commonjs",
+    "sourceMap": false
+  },
+  "include": [
+    "src/main.ts",
+    "src/block.ts"
+  ],
+  "exclude": [
+    "./node_modules/*"
+  ]
+}
