@@ -5,7 +5,8 @@
   },
   "include": [
     "src/main.ts",
-    "src/block.ts"
+    "src/block.ts",
+    "src/sockets.ts"
   ],
   "exclude": [
     "./node_modules/*"
