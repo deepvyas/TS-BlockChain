@@ -1,4 +1,5 @@
 import * as crypto from 'crypto-js';
+import {broadcastLatest} from './sockets';
 
 class Block {
   // public index: number;
@@ -67,10 +68,24 @@ class BlockChain {
     let hash: string = crypto.SHA256(index + prevHash + datetime + data).toString();
     let newBlock:Block = new Block(index,hash,prevHash,datetime,data);
     this.addBlock(newBlock);
+    broadcastLatest();
     return this.chain[this.chain.length -1];
   }
 
-  private static isBlockStructureValid(block: Block): boolean {
+  public replaceChain(newChain:Block[]): boolean {
+    if(isChainValid(this.chain[0],newChain)
+        && newChain.length > this.chain.length) {
+      console.log("Received blockchain is valid. Replacing current blockchain with received blockchain");
+      this.chain = newChain;
+      broadcastLatest();
+      return true;
+    }
+    else {
+      console.log("Received blockchain invalid");
+      return false;
+    }
+  }
+  public static isBlockStructureValid(block: Block): boolean {
     return typeof block.index === 'number'
         && typeof block.hash === 'string'
         && typeof block.prevHash === 'string'
@@ -86,15 +101,15 @@ class BlockChain {
 const getGenesisBlock = (): Block =>{
   let index: number = 0;
   let prevHash: string = '';
-  let datetime: number = Date.now();
+  let datetime: number = 1526819567083;
   let data: string = "Genesis block!";
   let hash: string = crypto.SHA256(index + prevHash + datetime + data).toString();
   return new Block(index,hash,prevHash,datetime,data);
 }
 
-const isChainValid = (genesisBlock: Block, blockChain: BlockChain):boolean  => {
-  const isGenesisValid = (genesisBlock: Block, blockChain: BlockChain): boolean => {
-    return JSON.stringify(genesisBlock) === JSON.stringify(blockChain.getChain()[0]);
+const isChainValid = (genesisBlock: Block, blockChain: Block[]):boolean  => {
+  const isGenesisValid = (genesisBlock: Block, blockChain: Block[]): boolean => {
+    return JSON.stringify(genesisBlock) === JSON.stringify(blockChain[0]);
   }
 
   if(!isGenesisValid(genesisBlock,blockChain)){
@@ -102,7 +117,7 @@ const isChainValid = (genesisBlock: Block, blockChain: BlockChain):boolean  => {
     return false;
   }
 
-  for(let i=1;i< blockChain.getChain().length; i++) {
+  for(let i=1;i< blockChain.length; i++) {
     if(!BlockChain.isValid(blockChain[i],blockChain[i-1])) {
       return false;
     }

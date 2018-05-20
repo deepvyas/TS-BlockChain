@@ -2,15 +2,18 @@ import * as bodyParser from 'body-parser';
 import * as express from 'express';
 
 import {Block, BlockChain, getGenesisBlock,isChainValid} from './block';
-const httpPort: number = parseInt(process.env.HTTP_PORT) || 8080;
-const wsPort: number = parseInt(process.env.P2P_PORT) || 8002;
+import {connectToPeer,initWSServer,broadcastLatest,getSockets} from './sockets'
+
+const httpPort: number = parseInt(process.env.HTTP_PORT) || 8000;
+const wsPort: number = parseInt(process.env.P2P_PORT) || 9000;
+
+const genesisBlock = getGenesisBlock();
+const _blockChain = new BlockChain(genesisBlock);
 
 const initHTTPServer = (httpPort:number) => {
   const app = express();
   app.use(bodyParser.json());
 
-  const genesisBlock = getGenesisBlock();
-  const _blockChain = new BlockChain(genesisBlock);
   app.get('/blocks', (req,res) => {
     res.send(_blockChain.getChain());
   });
@@ -18,6 +21,15 @@ const initHTTPServer = (httpPort:number) => {
   app.post('/mineBlock', (req,res) => {
     const block:Block = _blockChain.generateNewBlock(req.body.data);
     res.send(block);
+  });
+
+  app.get('/peers', (req, res) => {
+     res.send(getSockets().map((socket: any) => socket._socket.remoteAddress+ ":"+ socket._socket.remotePort));
+  });
+
+  app.post('/addPeer', (req, res) => {
+    connectToPeer(req.body.peer);
+    res.send();
   });
 
   app.listen(httpPort, () => {
@@ -28,4 +40,4 @@ const initHTTPServer = (httpPort:number) => {
 
 
 initHTTPServer(httpPort);
-//initWSServer(wsPort);
+initWSServer(wsPort, _blockChain);
