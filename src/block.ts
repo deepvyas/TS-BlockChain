@@ -134,7 +134,7 @@ class BlockChain {
     const latestBlock: Block = this.getLatestBlock();
     if(latestBlock.index % DIFFICULTY_ADJUSMENT_INTERVAL == 0 &&
     latestBlock.index != 0) {
-      this.getAdjustedDifficulty();
+      return this.getAdjustedDifficulty();
     }
     else {
       return latestBlock.difficulty;
