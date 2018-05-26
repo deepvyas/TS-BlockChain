@@ -1,12 +1,14 @@
 {
   "compilerOptions":{
     "module": "commonjs",
+    "target": "ES2015",
     "sourceMap": false
   },
   "include": [
     "src/main.ts",
     "src/block.ts",
-    "src/sockets.ts"
+    "src/sockets.ts",
+    "src/utils.ts"
   ],
   "exclude": [
     "./node_modules/*"
